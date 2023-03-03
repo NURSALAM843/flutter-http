@@ -1,0 +1,79 @@
+
+
+class FutureModel extends StatefulWidget {
+  const FutureModel({Key? key}) : super(key: key);
+
+  @override
+  State<FutureModel> createState() => _FutureModelState();
+}
+
+class _FutureModelState extends State<FutureModel> {
+  // List<Map<String, dynamic>> allUser = [];
+  List<UserModel> allUser = [];
+  Future getAllUser() async {
+    // await Future.delayed(Duration(seconds: 3));
+    try {
+      var response = await myhttp.get(
+        Uri.parse(
+          "https://reqres.in/api/users?page=2",
+        ),
+      );
+      var data = (json.decode(response.body) as Map<String, dynamic>)["data"];
+      data.forEach((element) {
+        allUser.add(
+          UserModel.fromJson(element),
+        );
+      });
+      print(allUser);
+    } catch (e) {
+      print("terjadi Kesalahan");
+      print(e);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Future Builder"),
+        actions: const [],
+      ),
+      body: FutureBuilder(
+        future: getAllUser(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Text("Loading ...."),
+            );
+          } else {
+            if (allUser.length == 0) {
+              return const Center(
+                child: Text("Tidak Ada Data"),
+              );
+            }
+            return InkWell(
+              onTap: () {},
+              child: ListView.builder(
+                itemCount: allUser.length,
+                itemBuilder: (context, index) => ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.grey[300],
+                    backgroundImage: NetworkImage(
+                      allUser[index].avatar,
+                    ),
+                  ),
+                  title: Text(
+                    "${allUser[index].id}. ${allUser[index].firstName} ${allUser[index].lastName}",
+                  ),
+                  subtitle: Text(
+                    "${allUser[index].email}",
+                  ),
+                ),
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
